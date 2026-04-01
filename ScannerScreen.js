@@ -18,11 +18,11 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
 
 // === GEMINI YAPILANDIRMASI ===
-const GEMINI_API_KEY = "AIzaSyD9YWeUYyeCITM0M40a5ZBBpcQYEpruj9U";
+// API anahtarı .env dosyasından okunur, GitHub'a gönderilmez!
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-// Modely ismini "gemini-1.5-flash" olarak tutalım ama problem v1beta ise "gemini-pro-vision" (eski) veya direkt ismi kontrol edelim.
-// Genelde v1beta hatası kütüphane versiyonuyla ilgilidir.
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+// gemini-2.0-flash: görüntü destekli, hızlı ve ücretsiz plan için uygun
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 const ScannerScreen = () => {
   const [permission, requestPermission] = useCameraPermissions();
