@@ -5,13 +5,19 @@
 - **Kanıt:** ![İterasyon 1 Kanıt](Naim.jpeg)
 
 ## İterasyon 2: Hedef ve Profil Ekranı
-- **Hedef:** Kullanıcıdan fiziksel verilerini ve fitness hedeflerini alan, karanlık temalı interaktif form ekranının oluşturulması. İlk ekran ile bağlantı kuruldu.
+- **Hedef:** Kullanıcıdan fiziksel verilerini ve fitness hedeflerini alan, karanlık temalı interaktif form ekranının oluşturulması.
 - **Araçlar:** Google Stitch, Antigravity, Stitch MCP.
 - **Kazanılan Ağırlık:** 10 kg (Text input & UI)
 - **Kanıt:** ![İterasyon 2 Kanıt](Naim2.jpeg)
 
 ## İterasyon 3: Akıllı Kamera Tarama Arayüzü
-- **Hedef:** Kullanıcının yiyeceklerini veya ekipmanlarını taraması için fütüristik, siberpunk temalı kamera vizör arayüzü tasarlandı. Önceki ekranla bağlantısı kuruldu.
+- **Hedef:** Fütüristik, siberpunk temalı kamera vizör arayüzü tasarlandı.
 - **Araçlar:** Google Stitch, Antigravity, Stitch MCP.
 - **Kazanılan Ağırlık:** 15 kg (Camera integration UI)
 - **Kanıt:** ![İterasyon 3 Kanıt](Naim3.jpeg)
+
+## İterasyon 4: Gerçek Kamera Entegrasyonu
+- **Hedef:** Sahte arka planın yerine cihazın gerçek kamerasının bağlanması ve arayüzün canlı kamera üzerine oturtulması.
+- **Araçlar:** Google Antigravity, Expo Camera / Vision Camera.
+- **Kazanılan Ağırlık:** 15 kg (Camera integration)
+- **Kanıt:** ![İterasyon 4 Kanıt](Naim4.jpeg)
