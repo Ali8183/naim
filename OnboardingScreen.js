@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, StatusBar } from 'react-native';
 
-const OnboardingScreen = () => {
+const OnboardingScreen = ({ onGetStarted }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0e0e0e" />
@@ -15,7 +15,7 @@ const OnboardingScreen = () => {
 
         {/* Alt Kısım: Butonlar */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.button} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={onGetStarted}>
             <Text style={styles.buttonText}>HEMEN BAŞLA</Text>
           </TouchableOpacity>
           

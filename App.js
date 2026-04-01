@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import OnboardingScreen from './OnboardingScreen';
+import ProfileScreen from './ProfileScreen';
 
 export default function App() {
+  const [currentScreen, setCurrentScreen] = useState('Onboarding');
+
   return (
     <View style={styles.container}>
-      {/* Uygulama açıldığında ilk olarak OnboardingScreen gösterilecek */}
-      <OnboardingScreen />
+      {currentScreen === 'Onboarding' ? (
+        <OnboardingScreen onGetStarted={() => setCurrentScreen('Profile')} />
+      ) : (
+        <ProfileScreen />
+      )}
     </View>
   );
 }
