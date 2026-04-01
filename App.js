@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import OnboardingScreen from './OnboardingScreen';
 import ProfileScreen from './ProfileScreen';
+import DashboardScreen from './DashboardScreen';
 import ScannerScreen from './ScannerScreen';
 
 export default function App() {
@@ -13,7 +14,10 @@ export default function App() {
         <OnboardingScreen onGetStarted={() => setCurrentScreen('Profile')} />
       )}
       {currentScreen === 'Profile' && (
-        <ProfileScreen onCreateProfile={() => setCurrentScreen('Scanner')} />
+        <ProfileScreen onCreateProfile={() => setCurrentScreen('Dashboard')} />
+      )}
+      {currentScreen === 'Dashboard' && (
+        <DashboardScreen onStartScan={() => setCurrentScreen('Scanner')} />
       )}
       {currentScreen === 'Scanner' && (
         <ScannerScreen />

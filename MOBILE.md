@@ -34,5 +34,11 @@
 - **Kazanılan Ağırlık:** 20 kg (Local Storage & Logic)
 - **Kanıt:** ![İterasyon 6 Kanıt](Naim6.jpeg)
 
+## İterasyon 7: Ana Ekran (Dashboard)
+- **Hedef:** Kullanıcının dinamik makro ve kalori hedeflerini fütüristik ilerleme çubuklarıyla gösterecek ana merkez ekranının tasarlanması.
+- **Araçlar:** Google Stitch, Antigravity, React Native, AsyncStorage.
+- **Kazanılan Ağırlık:** 15 kg (Dashboard UI & Dynamic Data)
+- **Kanıt:** ![İterasyon 7 Kanıt](Naim7.jpeg)
+
 ---
-**TOPLAM KALDIRILAN AĞIRLIK: 90 kg!** 🏋️‍♂️
+**TOPLAM KALDIRILAN AĞIRLIK: 105 kg!** 🏋️‍♂️
