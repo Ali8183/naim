@@ -18,7 +18,7 @@ const GOALS = [
   { id: 'keep_fit', title: 'Formda Kal', icon: '⚡' },
 ];
 
-const ProfileScreen = () => {
+const ProfileScreen = ({ onCreateProfile }) => {
   const [selectedGoal, setSelectedGoal] = useState('build_muscle');
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
@@ -98,7 +98,11 @@ const ProfileScreen = () => {
 
         {/* Alt Buton */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.button} activeOpacity={0.8}>
+          <TouchableOpacity 
+            style={styles.button} 
+            activeOpacity={0.8} 
+            onPress={onCreateProfile}
+          >
             <Text style={styles.buttonText}>PROFİLİ OLUŞTUR</Text>
           </TouchableOpacity>
         </View>
