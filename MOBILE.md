@@ -28,5 +28,11 @@
 - **Kazanılan Ağırlık:** 25 kg (AI feature)
 - **Kanıt:** ![İterasyon 5 Kanıt](Naim5.jpeg)
 
+## İterasyon 6: Dinamik Hesaplama ve Hafıza (AsyncStorage)
+- **Hedef:** Kullanıcı verilerini yerel hafızaya kaydetmek ve bu verilere göre dinamik kalori/protein ihtiyacı hesaplayan algoritmayı entegre etmek.
+- **Araçlar:** Google Antigravity, React Native, AsyncStorage.
+- **Kazanılan Ağırlık:** 20 kg (Local Storage & Logic)
+- **Kanıt:** ![İterasyon 6 Kanıt](Naim6.jpeg)
+
 ---
-**TOPLAM KALDIRILAN AĞIRLIK: 70 kg!** 🏋️‍♂️
+**TOPLAM KALDIRILAN AĞIRLIK: 90 kg!** 🏋️‍♂️
