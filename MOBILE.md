@@ -40,5 +40,11 @@
 - **Kazanılan Ağırlık:** 15 kg (Dashboard UI & Dynamic Data)
 - **Kanıt:** ![İterasyon 7 Kanıt](Naim7.jpeg)
 
+## İterasyon 8: Gerçek AI Vision Entegrasyonu (Gemini 1.5)
+- **Hedef:** Kameradan çekilen fotoğrafın gerçek Google Gemini AI modeline gönderilerek nesne tanıma ve besin değeri analizinin yapılması.
+- **Araçlar:** Google Antigravity, Gemini API, Expo Camera.
+- **Kazanılan Ağırlık:** 45 kg (Real AI Integration)
+- **Kanıt:** ![İterasyon 8 Kanıt](Naim8.jpeg)
+
 ---
-**TOPLAM KALDIRILAN AĞIRLIK: 105 kg!** 🏋️‍♂️
+**TOPLAM KALDIRILAN AĞIRLIK: 150 kg!** 🏋️‍♂️

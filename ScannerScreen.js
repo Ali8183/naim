@@ -3,19 +3,34 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  SafeAreaView, 
   StatusBar, 
   TouchableOpacity, 
-  Animated,
-  ActivityIndicator,
-  Modal
+  Animated, 
+  ActivityIndicator, 
+  Modal,
+  Alert,
+  Dimensions
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const { height: windowHeight, width: windowWidth } = Dimensions.get('window');
+
+// === GEMINI YAPILANDIRMASI ===
+const GEMINI_API_KEY = "AIzaSyD9YWeUYyeCITM0M40a5ZBBpcQYEpruj9U";
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+// Modely ismini "gemini-1.5-flash" olarak tutalım ama problem v1beta ise "gemini-pro-vision" (eski) veya direkt ismi kontrol edelim.
+// Genelde v1beta hatası kütüphane versiyonuyla ilgilidir.
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const ScannerScreen = () => {
   const [permission, requestPermission] = useCameraPermissions();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [anaLyzedData, setAnalyzedData] = useState(null);
+  
+  const cameraRef = useRef(null);
   const scanAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -41,13 +56,39 @@ const ScannerScreen = () => {
     ).start();
   }, [scanAnim]);
 
-  const handleCapture = () => {
-    setIsAnalyzing(true);
-    // 2 saniyelik AI analiz simülasyonu
-    setTimeout(() => {
-      setIsAnalyzing(false);
+  const handleCapture = async () => {
+    if (!cameraRef.current || isAnalyzing) return;
+
+    try {
+      setIsAnalyzing(true);
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.5,
+      });
+
+      const prompt = "Bu fotoğraftaki yiyecek veya fitness ekipmanı nedir? Lütfen sadece şu JSON formatında cevap ver ve başka hiçbir metin ekleme: {\"isim\": \"nesne adı\", \"kalori\": 100, \"protein\": 10, \"tavsiye\": \"kısa fitness tavsiyesi\"}";
+      
+      const imagePart = {
+        inlineData: {
+          data: photo.base64,
+          mimeType: "image/jpeg",
+        },
+      };
+
+      const result = await model.generateContent([prompt, imagePart]);
+      const responseText = result.response.text();
+      
+      const cleanJson = responseText.replace(/```json|```/g, '').trim();
+      const parsedData = JSON.parse(cleanJson);
+
+      setAnalyzedData(parsedData);
       setShowResult(true);
-    }, 2000);
+    } catch (error) {
+      console.error("AI Analiz Hatası:", error);
+      Alert.alert("Hata", "Analiz sırasında bir sorun oluştu. Gemini 1.5 Flash modeli bu bölgede veya API versiyonunda kısıtlı olabilir.");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   if (!permission) {
@@ -70,23 +111,29 @@ const ScannerScreen = () => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#0e0e0e" />
       
-      <CameraView style={styles.camera} facing="back">
-        <View style={styles.overlay}>
+      {/* Kamera tam ekran arka planda */}
+      <CameraView 
+        style={StyleSheet.absoluteFill} 
+        facing="back" 
+        ref={cameraRef}
+      />
+
+      {/* Overlay: Kamera üzerinde absolute position ile durmalı */}
+      <SafeAreaView style={styles.overlay} edges={['top', 'bottom']}>
+        <View style={styles.screenWrapper}>
           
-          <View style={styles.topOverlay} />
-          
+          <View style={styles.topEmpty} />
+
           <View style={styles.middleRow}>
             <View style={styles.sideOverlay} />
-            
             <View style={styles.viewfinder}>
               <View style={[styles.corner, styles.topLeft]} />
               <View style={[styles.corner, styles.topRight]} />
               <View style={[styles.corner, styles.bottomLeft]} />
               <View style={[styles.corner, styles.bottomRight]} />
-              
               <Animated.View 
                 style={[
                   styles.scanLine, 
@@ -94,16 +141,15 @@ const ScannerScreen = () => {
                 ]} 
               />
             </View>
-            
             <View style={styles.sideOverlay} />
           </View>
           
           <View style={styles.bottomOverlay}>
             {!isAnalyzing ? (
-              <>
-                <Text style={styles.instruction}>Yemeğini vizöre hizala</Text>
+              <View style={styles.shutterBox}>
+                <Text style={styles.instruction}>Nesneyi vizöre hizala</Text>
                 <TouchableOpacity 
-                  style={styles.shutterContainer} 
+                  style={styles.shutterBtn} 
                   activeOpacity={0.7}
                   onPress={handleCapture}
                 >
@@ -111,7 +157,7 @@ const ScannerScreen = () => {
                     <View style={styles.shutterInner} />
                   </View>
                 </TouchableOpacity>
-              </>
+              </View>
             ) : (
               <View style={styles.analysisContainer}>
                 <ActivityIndicator size="large" color="#39FF14" />
@@ -121,9 +167,9 @@ const ScannerScreen = () => {
           </View>
 
         </View>
-      </CameraView>
+      </SafeAreaView>
 
-      {/* AI Sonuç Modalı (Bottom Sheet) */}
+      {/* Result Modal */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -133,60 +179,43 @@ const ScannerScreen = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeaderLine} />
-            
             <Text style={styles.resultTitle}>✨ Analiz Sonucu</Text>
-            
-            <View style={styles.resultRow}>
-              <Text style={styles.label}>Tespit Edilen:</Text>
-              <Text style={styles.value}>Su Şişesi</Text>
-            </View>
-
-            <View style={styles.resultRow}>
-              <Text style={styles.label}>Besin Değeri:</Text>
-              <Text style={styles.value}>0 kcal / 0g Protein</Text>
-            </View>
-
+            <View style={styles.resultRow}><Text style={styles.label}>Tespit Edilen:</Text><Text style={styles.value}>{anaLyzedData?.isim}</Text></View>
+            <View style={styles.resultRow}><Text style={styles.label}>Besin Değeri:</Text><Text style={styles.value}>{anaLyzedData?.kalori} kcal / {anaLyzedData?.protein}g P</Text></View>
             <View style={styles.aiTavsiyesiBox}>
               <Text style={styles.aiTavsiyesiLabel}>AI Tavsiyesi</Text>
-              <Text style={styles.aiTavsiyesiText}>
-                Antrenman sırasında hidrasyon seviyeni korumak için mükemmel seçim. 
-                Kas gelişimi için su tüketimi kritik önem taşır!
-              </Text>
+              <Text style={styles.aiTavsiyesiText}>{anaLyzedData?.tavsiye}</Text>
             </View>
-
-            <TouchableOpacity 
-              style={styles.closeButton} 
-              onPress={() => setShowResult(false)}
-            >
-              <Text style={styles.closeButtonText}>TAMAM</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={() => setShowResult(false)}>
+              <Text style={styles.closeButtonText}>KAPAT</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0e0e0e',
+    backgroundColor: '#000',
   },
   center: {
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
-  camera: {
-    flex: 1,
-  },
   overlay: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
-  topOverlay: {
+  screenWrapper: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+  },
+  topEmpty: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   middleRow: {
     flexDirection: 'row',
@@ -194,26 +223,25 @@ const styles = StyleSheet.create({
   },
   sideOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-  },
-  bottomOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    alignItems: 'center',
-    paddingTop: 30,
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   viewfinder: {
     width: 250,
     height: 250,
     backgroundColor: 'transparent',
-    position: 'relative',
+  },
+  bottomOverlay: {
+    flex: 2,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   corner: {
     position: 'absolute',
-    width: 40,
-    height: 40,
+    width: 30,
+    height: 30,
     borderColor: '#39FF14',
-    borderWidth: 4,
+    borderWidth: 3,
   },
   topLeft: { top: 0, left: 0, borderRightWidth: 0, borderBottomWidth: 0 },
   topRight: { top: 0, right: 0, borderLeftWidth: 0, borderBottomWidth: 0 },
@@ -221,24 +249,20 @@ const styles = StyleSheet.create({
   bottomRight: { bottom: 0, right: 0, borderLeftWidth: 0, borderTopWidth: 0 },
   scanLine: {
     height: 2,
-    backgroundColor: 'rgba(57, 255, 20, 0.8)',
+    backgroundColor: '#39FF14',
     width: '100%',
     shadowColor: '#39FF14',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 10,
+    shadowOpacity: 0.8,
+    shadowRadius: 5,
+  },
+  shutterBox: {
+    alignItems: 'center',
   },
   instruction: {
-    color: '#ffffff',
+    color: '#fff',
+    marginBottom: 20,
     fontSize: 14,
-    marginBottom: 40,
-    fontWeight: '600',
     opacity: 0.8,
-  },
-  shutterContainer: {
-    position: 'absolute',
-    bottom: 60,
   },
   shutterOuter: {
     width: 80,
@@ -246,114 +270,66 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     borderWidth: 4,
     borderColor: '#39FF14',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(57, 255, 20, 0.1)',
+    padding: 4,
   },
   shutterInner: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#ffffff',
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 40,
   },
   analysisContainer: {
     alignItems: 'center',
-    marginTop: 40,
   },
   analysisText: {
     color: '#39FF14',
-    marginTop: 15,
-    fontSize: 16,
+    marginTop: 10,
     fontWeight: 'bold',
-    letterSpacing: 1,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'flex-end',
   },
   modalContent: {
     backgroundColor: '#1a1919',
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
     padding: 24,
-    paddingBottom: 40,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     borderWidth: 1,
     borderColor: 'rgba(57, 255, 20, 0.2)',
   },
   modalHeaderLine: {
     width: 40,
     height: 4,
-    backgroundColor: '#484847',
-    borderRadius: 2,
+    backgroundColor: '#333',
     alignSelf: 'center',
+    borderRadius: 2,
     marginBottom: 20,
   },
-  resultTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 24,
-  },
-  resultRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#262626',
-    paddingBottom: 12,
-  },
-  label: {
-    color: '#adaaaa',
-    fontSize: 15,
-  },
-  value: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  resultTitle: { color: '#fff', fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
+  resultRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  label: { color: '#888' },
+  value: { color: '#fff', fontWeight: 'bold' },
   aiTavsiyesiBox: {
     backgroundColor: 'rgba(57, 255, 20, 0.05)',
-    padding: 20,
-    borderRadius: 16,
+    padding: 16,
+    borderRadius: 12,
     marginVertical: 20,
-    borderLeftWidth: 3,
+    borderLeftWidth: 2,
     borderLeftColor: '#39FF14',
   },
-  aiTavsiyesiLabel: {
-    color: '#39FF14',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-  },
-  aiTavsiyesiText: {
-    color: '#adaaaa',
-    fontSize: 14,
-    lineHeight: 22,
-  },
+  aiTavsiyesiLabel: { color: '#39FF14', fontSize: 12, fontWeight: 'bold', marginBottom: 4 },
+  aiTavsiyesiText: { color: '#ccc', fontSize: 13 },
   closeButton: {
     backgroundColor: '#39FF14',
-    width: '100%',
-    paddingVertical: 18,
-    borderRadius: 24,
+    padding: 18,
+    borderRadius: 20,
     alignItems: 'center',
-    marginTop: 10,
-    shadowColor: '#39FF14',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 8,
   },
-  closeButtonText: {
-    color: '#0d6100',
-    fontSize: 16,
-    fontWeight: 'bold',
-    letterSpacing: 1.5,
-  },
-  errorText: { color: '#ffffff', fontSize: 16, marginBottom: 20 },
-  retryButton: { backgroundColor: '#39FF14', padding: 15, borderRadius: 20 },
-  retryText: { color: '#0d6100', fontWeight: 'bold' },
+  closeButtonText: { color: '#000', fontWeight: 'bold' },
+  errorText: { color: '#fff', marginBottom: 20 },
+  retryButton: { backgroundColor: '#39FF14', padding: 15, borderRadius: 15 },
+  retryText: { fontWeight: 'bold' }
 });
 
 export default ScannerScreen;

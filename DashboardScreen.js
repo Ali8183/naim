@@ -3,13 +3,13 @@ import {
   View, 
   Text, 
   StyleSheet, 
-  SafeAreaView, 
   StatusBar, 
   ScrollView, 
   TouchableOpacity,
   Dimensions,
   ActivityIndicator
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Svg, Circle } from 'react-native-svg';
 
